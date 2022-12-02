@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type RockPaperScisors map[string]Gesture
+type RockPaperScissors map[string]Gesture
 type Gesture struct {
 	Name  string
 	Point int
@@ -21,13 +21,13 @@ var (
 	LOSS    = "loss"
 	DRAW    = "draw"
 
-	winLooseCondition = map[string]int{
+	winLossCondition = map[string]int{
 		WIN:  6,
 		DRAW: 3,
 		LOSS: 0,
 	}
 
-	game = RockPaperScisors{
+	game = RockPaperScissors{
 		ROCK: Gesture{
 			Name:  ROCK,
 			Point: 1,
@@ -70,12 +70,12 @@ func main() {
 
 func score(opponent, you string) int {
 	if gestures[you] == gestures[opponent] {
-		return game[gestures[you]].Point + winLooseCondition[DRAW]
+		return game[gestures[you]].Point + winLossCondition[DRAW]
 	}
 
 	if game[gestures[you]].Beats == gestures[opponent] {
-		return game[gestures[you]].Point + winLooseCondition[WIN]
+		return game[gestures[you]].Point + winLossCondition[WIN]
 	}
 
-	return game[gestures[you]].Point + winLooseCondition[LOSS]
+	return game[gestures[you]].Point + winLossCondition[LOSS]
 }
