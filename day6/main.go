@@ -25,17 +25,6 @@ func findFirstUnique(input string, size int) int {
 	return 0
 }
 
-func findAllUnique(input string, size int) map[int]string {
-	uniques := make(map[int]string)
-	for i := size; i < len(input); i++ {
-		isFound := unique(input[i-size : i])
-		if isFound {
-			uniques[i] = input[i-size : i]
-		}
-	}
-	return uniques
-}
-
 func unique(abc string) bool {
 	values := make(map[rune]bool)
 	for _, i := range abc {
