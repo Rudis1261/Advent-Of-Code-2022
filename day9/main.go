@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -9,86 +11,100 @@ import (
 
 var (
 	directions = map[string]Position{
-		"U": {-1, 0},
-		"D": {1, 0},
-		"L": {0, -1},
+		"U": {1, 0},
+		"D": {-1, 0},
 		"R": {0, 1},
+		"L": {0, -1},
 	}
-	head    = Position{0, 0}
-	tail    = Position{0, 0}
+	// head    = Position{0, 0}
+	// tail    = Position{0, 0}
 	visited = []Position{}
+	rope    = []Position{}
 )
 
 type Position struct {
-	Y int
-	X int
-}
-
-type Move struct {
-	Direction Position
-	Amount    int
+	Y int `json:"y"`
+	X int `json:"x"`
 }
 
 func main() {
-	data, _ := os.ReadFile("input.txt")
+	data, _ := os.ReadFile("input.medium.txt")
 	lines := strings.Split(string(data), "\n")
 
-	parseMoves(parseLines(lines))
+	for i := 0; i < 10; i++ {
+		rope = append(rope, Position{})
+	}
 
-	log.Printf("Result 1: %d\n", len(visited))
-	log.Printf("Result 2: %v\n", visited)
-}
-
-func parseLines(lines []string) (moves []Move) {
 	for _, line := range lines {
 		parts := strings.Split(line, " ")
+		direction := directions[parts[0]]
 		amount, _ := strconv.Atoi(parts[1])
 
-		moves = append(moves, Move{
-			Amount:    amount,
-			Direction: directions[parts[0]],
-		})
-	}
+		for a := 0; a < amount; a++ {
+			rope[0].X += direction.X
+			rope[0].Y += direction.Y
 
-	return moves
-}
+			for i := 0; i < 9; i++ {
+				head := &rope[i]
+				tail := &rope[i+1]
 
-func parseMoves(moves []Move) {
-	for _, move := range moves {
-		for i := 0; i < move.Amount; i++ {
-			head.Y += move.Direction.Y
-			head.X += move.Direction.X
+				diff := Position{
+					Y: head.Y - tail.Y,
+					X: head.X - tail.X,
+				}
 
-			diff := Position{}
-			diffHeadTail := Position{
-				Y: tail.Y - head.Y,
-				X: tail.X - head.X,
+				if abs(diff.X) > 1 {
+					tail.X += floor(diff.X / 2)
+					if diff.Y == 0 {
+
+					} else if diff.Y > 0 {
+						tail.Y += 1
+					} else {
+						tail.Y -= 1
+					}
+				}
+
+				if abs(diff.Y) > 1 {
+					tail.Y += floor(diff.Y / 2)
+					if diff.X == 0 {
+
+					} else if diff.X > 0 {
+						tail.X += 1
+					} else {
+						tail.X -= 1
+					}
+				}
 			}
 
-			switch true {
-			case diffHeadTail.Y == 2 && diffHeadTail.X == 0:
-				diff.Y = 1
-				diff.X = 0
-			case diffHeadTail.Y == -2 && diffHeadTail.X == 0:
-				diff.Y = -1
-				diff.X = 0
-			case diffHeadTail.Y == 0 && diffHeadTail.X == 2:
-				diff.Y = 0
-				diff.X = 1
-			case diffHeadTail.Y == 0 && diffHeadTail.X == -2:
-				diff.Y = 0
-				diff.X = -1
-				// default:
-				// 	diff.Y = diffHeadTail.Y
-				// 	diff.X = diffHeadTail.X
-			}
-
-			newPos := Position{
-				Y: head.Y + diff.Y,
-				X: head.X + diff.X,
-			}
-
-			visited = append(visited, newPos)
+			visited = append(visited, rope[9])
 		}
 	}
+
+	log.Printf("Visited: %d, v: %v", len(unique(visited)), js(unique(visited)))
+}
+
+func js(input interface{}) (res string) {
+	data, _ := json.MarshalIndent(input, "", "    ")
+	return string(data)
+}
+
+func abs(a int) int {
+	return int(math.Abs(float64(a)))
+}
+
+func floor(a int) int {
+	return int(math.Floor(float64(a)))
+}
+
+func unique(slice []Position) []Position {
+	uniqMap := make(map[Position]struct{})
+	for _, v := range slice {
+		uniqMap[v] = struct{}{}
+	}
+
+	uniqSlice := make([]Position, 0, len(uniqMap))
+	for v := range uniqMap {
+		uniqSlice = append(uniqSlice, v)
+	}
+	return uniqSlice
 }
